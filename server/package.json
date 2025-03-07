@@ -1,0 +1,40 @@
+{
+  "name": "productivity-app-server",
+  "version": "1.0.0",
+  "description": "A backend server for a task management app, built with Node.js, Express.js, and GraphQL to handle task creation, updates, and management.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeWithApul/task-manager.git"
+  },
+  "keywords": [
+    "task-manager",
+    "task-management",
+    "productivity",
+    "to-do",
+    "nodejs",
+    "express",
+    "graphql",
+    "backend",
+    "rest-api",
+    "mongodb",
+    "open-source",
+    "project-management"
+  ],
+  "author": "Apul Gupta",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CodeWithApul/task-manager/issues"
+  },
+  "homepage": "https://github.com/CodeWithApul/task-manager#readme",
+  "dependencies": {
+    "@apollo/server": "^4.11.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "graphql": "^16.10.0",
+    "nodemon": "^3.1.9"
+  }
+}
