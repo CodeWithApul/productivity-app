@@ -1,7 +1,9 @@
 import { db } from "../config/database.js";
 
-export async function getTasks() {
-  const result = await db.query("SELECT * from tasks");
+export async function getTasks(user_id) {
+  const result = await db.query("SELECT * from tasks WHERE user_id=$1", [
+    user_id,
+  ]);
   return result.rows;
 }
 
@@ -10,22 +12,36 @@ export async function getTasksById(id) {
   return result.rows[0];
 }
 
-export async function getTasksByStatus(status) {
-  const result = await db.query(`SELECT * FROM tasks WHERE lower(status)=$1`, [
-    status.toLowerCase(),
-  ]);
+export async function getTasksByStatus(status, user_id) {
+  const result = await db.query(
+    `SELECT * FROM tasks WHERE lower(status)=$1 AND user_id=$2`,
+    [status.toLowerCase(), user_id]
+  );
   return result.rows;
 }
 
-export async function createTask({ title, description, duedate, status }) {
+export async function createTask({
+  title,
+  description,
+  duedate,
+  status,
+  user_id,
+}) {
   const result = await db.query(
-    `INSERT INTO tasks (title, description, dueDate, status) VALUES($1, $2, $3, $4) RETURNING *`,
-    [title, description, duedate, status]
+    `INSERT INTO tasks (title, description, dueDate, status, user_id) VALUES($1, $2, $3, $4, $5) RETURNING *`,
+    [title, description, duedate, status, user_id]
   );
   return result.rows[0];
 }
 
-export async function updateTask({ id, title, description, duedate, status }) {
+export async function updateTask({
+  id,
+  title,
+  description,
+  duedate,
+  status,
+  user_id,
+}) {
   const fields = [];
   const values = [];
   let query = "UPDATE tasks SET ";
@@ -52,16 +68,23 @@ export async function updateTask({ id, title, description, duedate, status }) {
   }
 
   query +=
-    fields.join(", ") + " WHERE id=$" + (fields.length + 1) + " RETURNING *";
+    fields.join(", ") +
+    " WHERE id=$" +
+    (fields.length + 1) +
+    " AND user_id=$" +
+    (fields.length = 2) +
+    " RETURNING *";
   values.push(id);
+  values.push(user_id);
 
   const result = await db.query(query, values);
   return result.rows[0];
 }
 
-export async function deleteTask(id) {
-  const result = await db.query(`DELETE FROM tasks WHERE id=$1 RETURNING *`, [
-    id,
-  ]);
+export async function deleteTask(id, user_id) {
+  const result = await db.query(
+    `DELETE FROM tasks WHERE id=$1 ANS user_id=$2 RETURNING *`,
+    [id, user_id]
+  );
   return result.rows[0];
 }

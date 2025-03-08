@@ -2,15 +2,19 @@ import express from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { readFile } from "node:fs/promises";
-import { resolvers } from "./graphql/resolvers.js";
 import env from "dotenv";
+import { resolvers } from "./graphql/resolvers.js";
+import { getUserById } from "./model/users.js";
+import { authMiddleware, handleLogin } from "./model/auth.js";
 
 env.config();
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.SERVER_APP_PORT;
 
-app.use(express.urlencoded({ extended: true }), express.json());
+app.use(express.urlencoded({ extended: true }), express.json(), authMiddleware);
+
+app.post("/login", handleLogin);
 
 const typeDefs = await readFile("./graphql/schema.graphql", "utf8");
 
@@ -20,7 +24,16 @@ const apolloServer = new ApolloServer({
 });
 await apolloServer.start();
 
-app.use("/graphql", expressMiddleware(apolloServer, {}));
+async function getContext({ req }) {
+  if (req.auth) {
+    const user = await getUserById(req.auth.sub);
+    console.log(user);
+    return { user };
+  }
+  return {};
+}
+
+app.use("/graphql", expressMiddleware(apolloServer, { context: getContext }));
 
 app.listen(PORT, () => {
   console.log(`Application is running on http://localhost:${PORT}`);

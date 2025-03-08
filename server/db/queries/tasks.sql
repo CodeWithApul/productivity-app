@@ -3,7 +3,7 @@ CREATE TABLE
         id serial primary key,
         title varchar(100) not null,
         description text,
-        dueDate timestamp,
+        duedate timestamp,
         createdAt timestamp default CURRENT_TIMESTAMP,
         status varchar(20)
     );

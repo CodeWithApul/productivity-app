@@ -10,8 +10,11 @@ import {
 
 export const resolvers = {
   Query: {
-    tasks: async () => {
-      const rows = await getTasks();
+    tasks: async (_root, _args, { user }) => {
+      if (!user) {
+        throw unauthorizedError("Missing authentication");
+      }
+      const rows = await getTasks(user.id);
 
       if (!rows.length)
         throw new GraphQLError("NOT FOUND", {
@@ -28,8 +31,11 @@ export const resolvers = {
 
       return row;
     },
-    taskByStatus: async (_root, { status }) => {
-      const rows = await getTasksByStatus(status);
+    taskByStatus: async (_root, { status }, { user }) => {
+      if (!user) {
+        throw unauthorizedError("Missing authentication");
+      }
+      const rows = await getTasksByStatus(status, user.id);
 
       if (!rows.length)
         throw new GraphQLError("NOT FOUND", {
@@ -42,18 +48,36 @@ export const resolvers = {
   Mutation: {
     createTask: async (
       _root,
-      { input: { title, description, duedate, status } }
+      { input: { title, description, duedate, status } },
+      { user }
     ) => {
-      return createTask({ title, description, duedate, status });
+      if (!user) {
+        throw unauthorizedError("Missing authentication");
+      }
+      return createTask({ title, description, duedate, status, user_id });
     },
     updateTask: async (
       _root,
-      { input: { id, title, description, duedate, status } }
+      { input: { id, title, description, duedate, status } },
+      { user }
     ) => {
-      return await updateTask({ id, title, description, duedate, status });
+      if (!user) {
+        throw unauthorizedError("Missing authentication");
+      }
+      return await updateTask({
+        id,
+        title,
+        description,
+        duedate,
+        status,
+        user_id,
+      });
     },
-    deleteTask: async (_root, { id }) => {
-      return await deleteTask(id);
+    deleteTask: async (_root, { id }, { user }) => {
+      if (!user) {
+        throw unauthorizedError("Missing authentication");
+      }
+      return await deleteTask(id, user_id);
     },
   },
 
@@ -69,4 +93,12 @@ function toIsoDate(timestamp) {
   return `${dt.getFullYear()}-${(dt.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${dt.getDate()}`;
+}
+
+function unauthorizedError(message) {
+  return new GraphQLError(message, {
+    extensions: {
+      code: "UNAUTHORIZED",
+    },
+  });
 }
