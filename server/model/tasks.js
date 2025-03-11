@@ -1,7 +1,7 @@
 import { db } from "../config/database.js";
 
 export async function getTasks(user_id) {
-  const result = await db.query("SELECT * from tasks WHERE user_id=$1", [
+  const result = await db.query("SELECT * FROM tasks WHERE user_id=$1", [
     user_id,
   ]);
   return result.rows;
@@ -55,7 +55,7 @@ export async function updateTask({
     values.push(description);
   }
   if (duedate !== undefined) {
-    fields.push("dueDate=$" + (fields.length + 1));
+    fields.push("duedate=$" + (fields.length + 1));
     values.push(duedate);
   }
   if (status !== undefined) {
@@ -72,7 +72,7 @@ export async function updateTask({
     " WHERE id=$" +
     (fields.length + 1) +
     " AND user_id=$" +
-    (fields.length = 2) +
+    (fields.length + 2) +
     " RETURNING *";
   values.push(id);
   values.push(user_id);
@@ -83,7 +83,7 @@ export async function updateTask({
 
 export async function deleteTask(id, user_id) {
   const result = await db.query(
-    `DELETE FROM tasks WHERE id=$1 ANS user_id=$2 RETURNING *`,
+    `DELETE FROM tasks WHERE id=$1 AND user_id=$2 RETURNING *`,
     [id, user_id]
   );
   return result.rows[0];

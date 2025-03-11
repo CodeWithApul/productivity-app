@@ -54,7 +54,13 @@ export const resolvers = {
       if (!user) {
         throw unauthorizedError("Missing authentication");
       }
-      return createTask({ title, description, duedate, status, user_id });
+      return createTask({
+        title,
+        description,
+        duedate,
+        status,
+        user_id: user.id,
+      });
     },
     updateTask: async (
       _root,
@@ -64,20 +70,26 @@ export const resolvers = {
       if (!user) {
         throw unauthorizedError("Missing authentication");
       }
-      return await updateTask({
-        id,
-        title,
-        description,
-        duedate,
-        status,
-        user_id,
-      });
+      try {
+        return await updateTask({
+          id,
+          title,
+          description,
+          duedate,
+          status,
+          user_id: user.id,
+        });
+      } catch (e) {
+        throw new GraphQLError(e.message, {
+          extensions: { code: "TASK_UPDATE_ERROR" },
+        });
+      }
     },
     deleteTask: async (_root, { id }, { user }) => {
       if (!user) {
         throw unauthorizedError("Missing authentication");
       }
-      return await deleteTask(id, user_id);
+      return await deleteTask(id, user.id);
     },
   },
 
@@ -99,6 +111,9 @@ function unauthorizedError(message) {
   return new GraphQLError(message, {
     extensions: {
       code: "UNAUTHORIZED",
+      http: {
+        status: 401,
+      },
     },
   });
 }
